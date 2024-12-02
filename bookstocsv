@@ -1,0 +1,46 @@
+
+
+import csv
+from bs4 import BeautifulSoup
+import requests
+
+# URL of the webpage to scrape
+url = "https://books.toscrape.com/index.html"  # Replace with the actual URL
+
+# Fetch the HTML content
+response = requests.get(url)
+html = response.content
+
+# Parse the HTML
+soup = BeautifulSoup(html, "html.parser")
+
+# Find all product containers
+products = soup.find_all("article", class_="product_pod")
+
+# Create a list to store the data
+data = []
+
+# Extract data for each product
+for product in products:
+    # Extract price
+    price_element = product.find("div", class_="product_price").find("p", class_="price_color")
+    price = price_element.text.strip() if price_element else None
+
+    # Extract availability
+    availability_element = product.find("div", class_="product_price").find("p", class_="instock availability")
+    availability = availability_element.text.strip() if availability_element else None
+
+    # Extract title
+    title_element = product.find("h3")
+    title = title_element.text.strip() if title_element else None
+    
+    # Append the data to the list
+    data.append([title, price, availability])  
+
+# Write the data to a CSV file
+with open("products.csv", "w", newline="", encoding="utf-8") as csvfile:
+    writer = csv.writer(csvfile)
+    writer.writerow(["Title", "Price", "Availability"])  # Write header row
+    writer.writerows(data)
+
+print("Data has been written to products.csv")
